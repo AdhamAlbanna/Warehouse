@@ -7,7 +7,7 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--List Of Stored-->
+        <!--List-->
         <scene sceneID="tne-QT-ifu">
             <objects>
                 <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="Warehouse" customModuleProvider="target" sceneMemberID="viewController">
@@ -84,7 +84,7 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
-                    <navigationItem key="navigationItem" title="List Of Stored" id="vMo-1B-9sK">
+                    <navigationItem key="navigationItem" title="List" id="vMo-1B-9sK">
                         <barButtonItem key="rightBarButtonItem" image="plus" catalog="system" id="Sly-Zz-0LB">
                             <connections>
                                 <segue destination="cu9-ag-qrE" kind="show" id="tF2-gx-EFG"/>
@@ -138,6 +138,14 @@
                                     <action selector="BtnSelectImage:" destination="cu9-ag-qrE" eventType="touchUpInside" id="WeS-Q0-x0T"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Fje-vC-lZh">
+                                <rect key="frame" x="180" y="674" width="54" height="41"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="24"/>
+                                <state key="normal" title="Save"/>
+                                <connections>
+                                    <action selector="BtnSave:" destination="cu9-ag-qrE" eventType="touchUpInside" id="jBo-Qi-Wus"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
@@ -152,25 +160,29 @@
                             <constraint firstItem="6p0-D2-fCY" firstAttribute="trailing" secondItem="8x7-OW-wG8" secondAttribute="trailing" id="hU2-ds-utH"/>
                             <constraint firstItem="8x7-OW-wG8" firstAttribute="trailing" secondItem="ACQ-7V-fjk" secondAttribute="trailing" id="mxC-aa-zEY"/>
                             <constraint firstItem="4lH-mg-4xE" firstAttribute="trailing" secondItem="8x7-OW-wG8" secondAttribute="trailing" id="n9V-tv-wnI"/>
+                            <constraint firstItem="Fje-vC-lZh" firstAttribute="top" secondItem="4lH-mg-4xE" secondAttribute="bottom" constant="42" id="vQU-xw-kuJ"/>
+                            <constraint firstItem="Fje-vC-lZh" firstAttribute="centerX" secondItem="g7z-T7-NbV" secondAttribute="centerX" id="w7P-kh-zNX"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="ics-Uh-hUI"/>
                     </view>
                     <navigationItem key="navigationItem" title="Add Item" id="ghj-04-0Yb">
                         <rightBarButtonItems>
-                            <barButtonItem systemItem="save" id="w92-OO-dI2">
-                                <connections>
-                                    <action selector="BtnSave:" destination="cu9-ag-qrE" id="kWm-GY-piN"/>
-                                </connections>
-                            </barButtonItem>
                             <barButtonItem title="Add Stored" id="zJg-sS-2fq">
                                 <connections>
                                     <segue destination="vmL-ht-mdL" kind="show" id="iLX-zm-gId"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem systemItem="trash" id="rle-po-iGu">
+                                <color key="tintColor" systemColor="systemRedColor" red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <connections>
+                                    <action selector="BtnDelete:" destination="cu9-ag-qrE" id="dvq-lc-JWa"/>
                                 </connections>
                             </barButtonItem>
                         </rightBarButtonItems>
                     </navigationItem>
                     <connections>
                         <outlet property="ToolNameTF" destination="ACQ-7V-fjk" id="nVK-5Q-05R"/>
+                        <outlet property="btnDelete" destination="rle-po-iGu" id="Pp9-cs-hQS"/>
                         <outlet property="imgToolImage" destination="4lH-mg-4xE" id="kri-tK-1mO"/>
                         <outlet property="pvSotreType" destination="8x7-OW-wG8" id="Sdc-sO-eHM"/>
                     </connections>

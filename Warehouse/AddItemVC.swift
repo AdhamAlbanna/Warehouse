@@ -16,6 +16,7 @@ UIImagePickerControllerDelegate,UINavigationControllerDelegate{
     @IBOutlet weak var pvSotreType: UIPickerView!
     @IBOutlet weak var imgToolImage: UIImageView!
     @IBOutlet weak var ToolNameTF: UITextField!
+    @IBOutlet weak var btnDelete: UIBarButtonItem!
     var ListStoreType=[StoredType]()
     var EditOrDeleteItem:Items?
     var imagePicker:UIImagePickerController!
@@ -32,6 +33,11 @@ UIImagePickerControllerDelegate,UINavigationControllerDelegate{
         if EditOrDeleteItem != nil {
             LoadForEdit()
         }
+        
+        if EditOrDeleteItem == nil {
+            self.btnDelete.isEnabled = false
+        }
+        
     }
     
     
@@ -115,12 +121,13 @@ UIImagePickerControllerDelegate,UINavigationControllerDelegate{
     }
     
     
-    @IBAction func BuDelete(_ sender: Any) {
+    @IBAction func BtnDelete(_ sender: Any) {
         if EditOrDeleteItem != nil{
             context.delete(EditOrDeleteItem! )
             ad.saveContext()
             _ =  navigationController?.popViewController(animated: true)
             dismiss(animated: true, completion: nil)
+            
         }
     }
     
