@@ -1,4 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="1" systemVersion="11A491" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="false" userDefinedModelVersionIdentifier="">
-    <elements/>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="15508" systemVersion="19F96" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="Items" representedClassName="Items" syncable="YES" codeGenerationType="class">
+        <attribute name="date_add" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="image" optional="YES" attributeType="Transformable"/>
+        <attribute name="item_name" optional="YES" attributeType="String"/>
+        <relationship name="toStored" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="StoredType" inverseName="toItems" inverseEntity="StoredType"/>
+    </entity>
+    <entity name="StoredType" representedClassName="StoredType" syncable="YES" codeGenerationType="class">
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <relationship name="toItems" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Items" inverseName="toStored" inverseEntity="Items"/>
+    </entity>
+    <elements>
+        <element name="StoredType" positionX="-63" positionY="-18" width="128" height="73"/>
+        <element name="Items" positionX="139.390625" positionY="-0.18359375" width="128" height="103"/>
+    </elements>
 </model>
