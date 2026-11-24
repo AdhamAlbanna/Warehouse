@@ -2,32 +2,23 @@
 //  AddStoredVC.swift
 //  Warehouse
 //
-//  Created by Adham Albanna on 8/14/20.
-//  Copyright © 2020 Adham Albanna. All rights reserved.
-//
 
 import UIKit
 
-class AddStoredVC: UIViewController {
+final class AddStoredVC: UIViewController {
 
-    @IBOutlet weak var StoreNameTF: UITextField!
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
+    @IBOutlet private weak var storeNameTF: UITextField!
 
-        // Do any additional setup after loading the view.
-    }
-    
-    @IBAction func BtnSave(_ sender: Any) {
-        let store=StoredType(context: context)
-        store.name=StoreNameTF.text
-        do{
-            ad.saveContext()
-            StoreNameTF.text=""
-            print("saved")
-        }catch{
-            print("cannot save")
+    @IBAction private func saveTapped(_ sender: Any) {
+        let name = storeNameTF.text?.trimmingCharacters(in: .whitespaces) ?? ""
+        guard !name.isEmpty else {
+            showAlert(title: "Missing name", message: "Enter a storage type name.")
+            return
         }
-    }
 
+        let store = StoredType(context: context)
+        store.name = name
+        appDelegate.saveContext()
+        storeNameTF.text = ""
+    }
 }

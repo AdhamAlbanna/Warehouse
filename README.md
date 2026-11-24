@@ -4,6 +4,7 @@ An iOS app written in **Swift 5** for keeping track of the things you store: eac
 
 ## Features
 - Add, edit and delete items
+- Input validation with friendly alerts
 - Attach a photo to each item from the photo library
 - Organize items by storage type (create your own types)
 - Live list updates with `NSFetchedResultsController`
@@ -19,5 +20,5 @@ An iOS app written in **Swift 5** for keeping track of the things you store: eac
 2. Open `Warehouse.xcodeproj` in Xcode
 3. Choose a simulator or device and press **Run**
 
-## Author
+## Maintainer
 Adham Albanna · [LinkedIn](https://www.linkedin.com/in/adhamalbanna/)

@@ -1,135 +1,130 @@
 //
-//  AddItem.swift
+//  AddItemVC.swift
 //  Warehouse
 //
-//  Created by Adham Albanna on 8/14/20.
-//  Copyright © 2020 Adham Albanna. All rights reserved.
-//
 
-import UIKit
 import CoreData
+import UIKit
 
-class AddItemVC: UIViewController , UIPickerViewDelegate
-    ,UIPickerViewDataSource,
-UIImagePickerControllerDelegate,UINavigationControllerDelegate{
-    
-    @IBOutlet weak var pvSotreType: UIPickerView!
-    @IBOutlet weak var imgToolImage: UIImageView!
-    @IBOutlet weak var ToolNameTF: UITextField!
-    @IBOutlet weak var btnDelete: UIBarButtonItem!
-    var ListStoreType=[StoredType]()
-    var EditOrDeleteItem:Items?
-    var imagePicker:UIImagePickerController!
-    
+final class AddItemVC: UIViewController {
+
+    @IBOutlet private weak var storeTypePicker: UIPickerView!
+    @IBOutlet private weak var itemImageView: UIImageView!
+    @IBOutlet private weak var itemNameTF: UITextField!
+    @IBOutlet private weak var deleteButton: UIBarButtonItem!
+
+    /// Set when editing or deleting an existing item.
+    var itemToEdit: Items?
+
+    private var storeTypes = [StoredType]()
+    private let imagePicker = UIImagePickerController()
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        super.viewDidLoad()
-        pvSotreType.dataSource=self
-        pvSotreType.delegate=self
-        imagePicker=UIImagePickerController()
-        imagePicker.delegate=self
-        LoadStoesd()
-        if EditOrDeleteItem != nil {
-            LoadForEdit()
+        storeTypePicker.dataSource = self
+        storeTypePicker.delegate = self
+        imagePicker.delegate = self
+
+        loadStoreTypes()
+        if let item = itemToEdit {
+            populate(with: item)
         }
-        
-        if EditOrDeleteItem == nil {
-            self.btnDelete.isEnabled = false
-        }
-        
+        deleteButton.isEnabled = itemToEdit != nil
     }
-    
-    
-    func LoadStoesd() {
-        let fecthRequest:NSFetchRequest<StoredType>=StoredType.fetchRequest()
-        do{
-            ListStoreType=try context.fetch(fecthRequest)
-        }catch{
-            
+
+    // MARK: - Data
+
+    private func loadStoreTypes() {
+        let request: NSFetchRequest<StoredType> = StoredType.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
+        do {
+            storeTypes = try context.fetch(request)
+        } catch {
+            showAlert(title: "Could not load storage types", message: error.localizedDescription)
         }
     }
-    
+
+    private func populate(with item: Items) {
+        itemNameTF.text = item.item_name
+        itemImageView.image = item.image as? UIImage
+
+        if let store = item.toStored, let row = storeTypes.firstIndex(of: store) {
+            storeTypePicker.selectRow(row, inComponent: 0, animated: false)
+        }
+    }
+
+    // MARK: - Actions
+
+    @IBAction private func selectImageTapped(_ sender: Any) {
+        present(imagePicker, animated: true)
+    }
+
+    @IBAction private func saveTapped(_ sender: Any) {
+        let name = itemNameTF.text?.trimmingCharacters(in: .whitespaces) ?? ""
+        guard !name.isEmpty else {
+            showAlert(title: "Missing name", message: "Enter an item name.")
+            return
+        }
+        guard !storeTypes.isEmpty else {
+            showAlert(title: "No storage type", message: "Add a storage type before saving items.")
+            return
+        }
+
+        let item = itemToEdit ?? Items(context: context)
+        item.item_name = name
+        item.date_add = Date()
+        item.image = itemImageView.image
+        item.toStored = storeTypes[storeTypePicker.selectedRow(inComponent: 0)]
+        appDelegate.saveContext()
+
+        if itemToEdit != nil {
+            navigationController?.popViewController(animated: true)
+        } else {
+            itemNameTF.text = ""
+            itemImageView.image = nil
+        }
+    }
+
+    @IBAction private func deleteTapped(_ sender: Any) {
+        guard let item = itemToEdit else { return }
+        context.delete(item)
+        appDelegate.saveContext()
+        navigationController?.popViewController(animated: true)
+    }
+}
+
+// MARK: - UIPickerViewDataSource, UIPickerViewDelegate
+
+extension AddItemVC: UIPickerViewDataSource, UIPickerViewDelegate {
+
     func numberOfComponents(in pickerView: UIPickerView) -> Int {
-        return 1
+        1
     }
+
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return ListStoreType.count
+        storeTypes.count
     }
-    
+
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        let store=ListStoreType[row]
-        return store.name
+        storeTypes[row].name
     }
-    
-    @IBAction func BtnSelectImage(_ sender: Any) {
-        present(imagePicker, animated: true, completion: nil)
-    }
-    
-    
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]){
-        if let image = info[UIImagePickerController.InfoKey.originalImage] as? UIImage{
-            imgToolImage.image=image
+}
+
+// MARK: - UIImagePickerControllerDelegate
+
+extension AddItemVC: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+
+    func imagePickerController(
+        _ picker: UIImagePickerController,
+        didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
+    ) {
+        if let image = info[.originalImage] as? UIImage {
+            itemImageView.image = image
         }
-        imagePicker.dismiss(animated: true, completion: nil)
-        
+        picker.dismiss(animated: true)
     }
-    
-    // end implment image picker
-    
-    @IBAction func BtnSave(_ sender: Any) {
-        
-        let newItem:Items!
-        if EditOrDeleteItem == nil {
-            newItem=Items(context: context)
-        }else{
-            newItem=EditOrDeleteItem
-        }
-        
-        
-        newItem.item_name=ToolNameTF.text
-        newItem.date_add=NSDate() as Date
-        newItem.image=imgToolImage.image
-        newItem.toStored=ListStoreType[pvSotreType.selectedRow(inComponent: 0)]
-        do{
-            ad.saveContext()
-            ToolNameTF.text=""
-            print("saved")
-        }catch
-        {
-            print("Error")
-        }
+
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true)
     }
-    
-    func   LoadForEdit() {
-        if let item = EditOrDeleteItem{
-            ToolNameTF.text=item.item_name
-            imgToolImage.image=item.image as? UIImage
-            
-            if let store=item.toStored {
-                var index=0
-                while index<ListStoreType.count {
-                    let row=ListStoreType[index]
-                    if row.name==store.name{
-                        pvSotreType.selectRow(index, inComponent: 0, animated: false)
-                    }
-                    index=index+1
-                }
-            }
-        }
-        
-    }
-    
-    
-    @IBAction func BtnDelete(_ sender: Any) {
-        if EditOrDeleteItem != nil{
-            context.delete(EditOrDeleteItem! )
-            ad.saveContext()
-            _ =  navigationController?.popViewController(animated: true)
-            dismiss(animated: true, completion: nil)
-            
-        }
-    }
-    
-    
 }

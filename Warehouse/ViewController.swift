@@ -2,115 +2,111 @@
 //  ViewController.swift
 //  Warehouse
 //
-//  Created by Adham Albanna on 8/14/20.
-//  Copyright © 2020 Adham Albanna. All rights reserved.
-//
 
-import UIKit
 import CoreData
+import UIKit
 
-class ViewController: UIViewController ,UITableViewDelegate,
-    UITableViewDataSource, NSFetchedResultsControllerDelegate
+final class ViewController: UIViewController {
 
-{
+    @IBOutlet private weak var tableView: UITableView!
 
-    @IBOutlet weak var tableView: UITableView!
-    var controller:NSFetchedResultsController<Items>!
+    private var fetchedResultsController: NSFetchedResultsController<Items>!
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        tableView.dataSource=self
-        tableView.delegate=self
-        loadIetms()
+        tableView.dataSource = self
+        tableView.delegate = self
+        loadItems()
     }
- 
-    func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        guard segue.identifier == "EditOrDelete",
+              let destination = segue.destination as? AddItemVC,
+              let item = sender as? Items else { return }
+        destination.itemToEdit = item
     }
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if let sections =  controller.sections {
-            let sectionInfo=sections[section]
-            return sectionInfo.numberOfObjects
+
+    // MARK: - Data
+
+    private func loadItems() {
+        let request: NSFetchRequest<Items> = Items.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(key: "date_add", ascending: false)]
+
+        fetchedResultsController = NSFetchedResultsController(
+            fetchRequest: request,
+            managedObjectContext: context,
+            sectionNameKeyPath: nil,
+            cacheName: nil
+        )
+        fetchedResultsController.delegate = self
+
+        do {
+            try fetchedResultsController.performFetch()
+        } catch {
+            showAlert(title: "Could not load items", message: error.localizedDescription)
         }
-        return 0
     }
+}
+
+// MARK: - UITableViewDataSource, UITableViewDelegate
+
+extension ViewController: UITableViewDataSource, UITableViewDelegate {
+
+    func numberOfSections(in tableView: UITableView) -> Int {
+        1
+    }
+
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        fetchedResultsController.sections?[section].numberOfObjects ?? 0
+    }
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-      let cell=tableView.dequeueReusableCell(withIdentifier: "ItemCell", for: indexPath)
-        as! TableViewCell
-        configureCell(cell: cell, indexPath: indexPath)
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "ItemCell", for: indexPath) as? ItemCell else {
+            return UITableViewCell()
+        }
+        cell.configure(with: fetchedResultsController.object(at: indexPath))
         return cell
     }
-    
-    func configureCell(cell:TableViewCell,indexPath:IndexPath)     {
-        let Singleitem=controller.object(at: indexPath )
-        cell.setMyCell(item:Singleitem)
-    }
-    
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-    
-        if  let objc=controller.fetchedObjects{
-            let item=objc[indexPath.row]
-            performSegue(withIdentifier: "EditOrDelete", sender: item)
-        }
+        let item = fetchedResultsController.object(at: indexPath)
+        performSegue(withIdentifier: "EditOrDelete", sender: item)
     }
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier=="EditOrDelete" {
-            if let destination=segue.destination as? AddItemVC {
-                if let item=sender as?Items {
-                    destination.EditOrDeleteItem=item
-                }
-            }/// Add
-        }
-    }
-    func loadIetms() {
-   
-        let fetchRequest:NSFetchRequest<Items>=Items.fetchRequest()
-        let  date_addSort=NSSortDescriptor(key: "date_add", ascending: false)
-        fetchRequest.sortDescriptors=[date_addSort]
-        controller=NSFetchedResultsController(fetchRequest:fetchRequest , managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
-        controller.delegate=self
-        do{
-            try controller.performFetch()
-        }catch{
-            print("error")
-        }
-    }
+}
+
+// MARK: - NSFetchedResultsControllerDelegate
+
+extension ViewController: NSFetchedResultsControllerDelegate {
+
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         tableView.beginUpdates()
     }
+
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         tableView.endUpdates()
     }
 
-    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
-         // data fetch
-        switch(type) {
-            
-        case.insert:
-            if let indexPath = newIndexPath {
-                tableView.insertRows(at: [indexPath], with: .fade)
+    func controller(
+        _ controller: NSFetchedResultsController<NSFetchRequestResult>,
+        didChange anObject: Any,
+        at indexPath: IndexPath?,
+        for type: NSFetchedResultsChangeType,
+        newIndexPath: IndexPath?
+    ) {
+        switch type {
+        case .insert:
+            if let newIndexPath { tableView.insertRows(at: [newIndexPath], with: .fade) }
+        case .delete:
+            if let indexPath { tableView.deleteRows(at: [indexPath], with: .fade) }
+        case .update:
+            if let indexPath, let cell = tableView.cellForRow(at: indexPath) as? ItemCell {
+                cell.configure(with: fetchedResultsController.object(at: indexPath))
             }
-            break
-        case.delete:
-            if let indexPath = indexPath {
-                tableView.deleteRows(at: [indexPath], with: .fade)
-            }
-            break
-        case.update:
-            if let indexPath = indexPath {
-                let cell = tableView.cellForRow(at: indexPath) as! TableViewCell
-                configureCell(cell: cell, indexPath: indexPath )
-            }
-            break
-        case.move:
-            if let indexPath = indexPath {
-                tableView.deleteRows(at: [indexPath], with: .fade)
-            }
-            if let indexPath = newIndexPath {
-                tableView.insertRows(at: [indexPath], with: .fade)
-            }
-            break
-            
+        case .move:
+            if let indexPath { tableView.deleteRows(at: [indexPath], with: .fade) }
+            if let newIndexPath { tableView.insertRows(at: [newIndexPath], with: .fade) }
+        @unknown default:
+            tableView.reloadData()
         }
     }
 }
